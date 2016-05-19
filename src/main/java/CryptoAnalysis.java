@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -6,6 +8,7 @@ public class CryptoAnalysis {
 
     private GeneratorDzhyffi generatorDzhyffi;
     private final static double ta = 2.326347874, tb1 = 6.009353488, tb2 = 6.120756286;
+    private final static int THREADS_COUNT = 15;
 
     public CryptoAnalysis(GeneratorDzhyffi generatorDzhyffi) {
         this.generatorDzhyffi = generatorDzhyffi;
@@ -32,11 +35,13 @@ public class CryptoAnalysis {
         System.out.println(NL2);
         System.out.println(CL2);
 
-//        ArrayList<int[]> results = new ArrayList<int[]>();
-        ArrayList<int[]> results = analyzeRegister(10000000, 30, 0, NL1, CL1, temp);
-//        ArrayList<int[]> results = analyzeRegister(10000000, 31, 1, NL2, CL2, temp);
+//        ArrayList<String> resultsL1 = analyzeRegister(1073741824, 30, 0, NL1, CL1, temp, THREADS_COUNT);
+        ArrayList<String> resultsL1 = analyzeRegister(1000000, 30, 0, NL1, CL1, temp, THREADS_COUNT);
+//        ArrayList<String> resultsL2 = analyzeRegister(2147483647, 31, 1, NL2, CL2, temp, THREADS_COUNT);
+//        ArrayList<String> resultsL2 = analyzeRegister(1000000, 31, 1, NL2, CL2, temp, THREADS_COUNT);
 
-//        analyzeRegister(1073741824, 30, 0, NL1, CL1, temp, results);
+//        analyzeRegister(1073741824, 30, 0, NL1, CL1, temp, resultsL1);
+//        analyzeRegister(10000000, 310, 0, NL1, CL1, temp, resultsL1);
 
         /*Task.setValues(CL1, 30, NL1, temp);
         Thread thread1 = new Thread(new Task(new LinearFeedbackShiftRegister(generatorDzhyffi.get(0)), 3200000, 3300000));
@@ -60,22 +65,31 @@ public class CryptoAnalysis {
         }*/
 
         System.out.println("****************************");
-        for (int[] t1 : results) {
-            for (int t2 : t1) {
-                System.out.print(t2);
+
+        try (FileWriter writer = new FileWriter("resultsL2.txt")) {
+            for (String buffer : resultsL1) {
+                writer.write(buffer + "\n");
             }
-            System.out.println();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
 
 
     }
 
-    private ArrayList<int[]> analyzeRegister(int n, int size, int index, double NL, double CL, int[] temp) {
+//    private ArrayList<int[]> analyzeRegister(int n, int size, int index, double NL, double CL, int[] temp) {
+    private ArrayList<String> analyzeRegister(int n, int size, int index, double NL, double CL, int[] temp, final int threadCount) {
         Task.setValues(CL, size, NL, temp);
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+        int step = 100000;
+//        ExecutorService executor = Executors.newFixedThreadPool(15);
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         long time = - System.currentTimeMillis();
-        for (int i = 0; i < n; i+= 100000) {
-            executor.submit(new Task(new LinearFeedbackShiftRegister(generatorDzhyffi.get(index)), i, i + 100000));
+        int i;
+        for (i = 0; i < n; i+= step) {
+            executor.submit(new Task(new LinearFeedbackShiftRegister(generatorDzhyffi.get(index)), i, i + step));
+        }
+        if (i != n) {
+            executor.submit(new Task(new LinearFeedbackShiftRegister(generatorDzhyffi.get(index)), i, i + (n % step)));
         }
         executor.shutdown();
         while (!executor.isTerminated()) {
@@ -87,6 +101,7 @@ public class CryptoAnalysis {
     }
 
     private void analyzeRegister(int n, int size, int index, double NL, double CL, int[] temp, ArrayList<int[]> results) {
+        long time = - System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
             if (i % 100000 == 0) {
                 System.out.println("i = " + i);
@@ -103,15 +118,25 @@ public class CryptoAnalysis {
                 results.add(current);
             }
         }
+        time += System.currentTimeMillis();
+        System.out.println("time = " + time);
     }
 
     public static int[] getBinary(final int i, final int size) {
         int result[] = new int[size];
         String temp = Integer.toBinaryString(i);
         for (int j = size - 1, n = temp.length(); j >= size - n; j--) {
-            result[j] = Character.digit((temp.charAt(-size + n + j)), 2);
+            result[j] = Character.digit((temp.charAt(- size + n + j)), 2);
         }
         return result;
+    }
+
+    public static String toBinary(int i, int size) {
+        StringBuilder result = new StringBuilder(Integer.toBinaryString(i));
+        while (result.length() < size) {
+            result.insert(0, '0');
+        }
+        return result.toString();
     }
 
     private double calculateC(double N) {

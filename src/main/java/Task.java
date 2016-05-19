@@ -5,7 +5,8 @@ class Task implements Runnable {
     private static double CL, NL;
     private static int position;
     private static int[] temp;
-    private static ArrayList<int[]> results = new ArrayList<int[]>();
+//    private static ArrayList<int[]> results = new ArrayList<>();
+    private static ArrayList<String> results = new ArrayList<>();
 
     private final int startPoint, finishPoint;
     private LinearFeedbackShiftRegister register;
@@ -23,7 +24,8 @@ class Task implements Runnable {
         this.finishPoint = finishPoint;
     }
 
-    public static ArrayList<int[]> getResults () {
+//    public static ArrayList<int[]> getResults () {
+    public static ArrayList<String> getResults () {
         return results;
     }
 
@@ -32,7 +34,8 @@ class Task implements Runnable {
             if (i % 100000 == 0) {
                 System.out.println(i);
             }
-            int current[] = CryptoAnalysis.getBinary(i, position);
+//            int current[] = CryptoAnalysis.getBinary(i, position);
+            String current = CryptoAnalysis.toBinary(i, position);
             int R = 0;
             register.setVector(current);
             for (int j = 0; j < NL; j++) {
@@ -43,4 +46,5 @@ class Task implements Runnable {
             }
         }
     }
+
 }

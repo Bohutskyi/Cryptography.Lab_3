@@ -1,3 +1,4 @@
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 /**
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 public class LinearFeedbackShiftRegister {
 
     private ArrayList<Integer> vector;
+//    private BigInteger vector;
     private final ArrayList<Integer> coefficients;
     private int n;
 
@@ -18,12 +20,12 @@ public class LinearFeedbackShiftRegister {
 
     public LinearFeedbackShiftRegister(int n, ArrayList<Integer> arrayList) {
         this.n = n;
-        coefficients = new ArrayList<Integer>(arrayList);
+        coefficients = new ArrayList<>(arrayList);
     }
 
     public LinearFeedbackShiftRegister(int n, Integer ... array) {
         this.n = n;
-        coefficients = new ArrayList<Integer>();
+        coefficients = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             coefficients.add(0);
         }
@@ -36,16 +38,22 @@ public class LinearFeedbackShiftRegister {
         this.vector = vector;
     }
 
+    public void setVector(String s) {
+        vector = new ArrayList<>();
+        for (int i = 0, n = s.length(); i < n; i++) {
+            vector.add(Character.getNumericValue(s.charAt(i)));
+        }
+    }
+
     public void setVector(int[] array) {
-        vector = new ArrayList<Integer>();
-//        vector.clear();
+        vector = new ArrayList<>();
         for (int i = 0, n = array.length; i < n; i++) {
             vector.add(array[i]);
         }
     }
 
     public void setVector(Integer ... array) {
-        this.vector = new ArrayList<Integer>();
+        this.vector = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             vector.add(0);
         }
