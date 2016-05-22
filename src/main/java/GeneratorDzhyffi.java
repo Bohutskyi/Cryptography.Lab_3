@@ -1,27 +1,20 @@
 public class GeneratorDzhyffi {
 
-    private LinearFeedbackShiftRegister[] L;
+    private LinearRegister[] L;
 
-    public GeneratorDzhyffi(LinearFeedbackShiftRegister[] l) {
+    public GeneratorDzhyffi(LinearRegister[] l) {
         L = l;
     }
 
-    public int getNext() {
-        int temp = L[2].getNext();
-        if (temp == 1) {
-            L[1].getNext();
-            return L[0].getNext();
+    public long getNext() {
+        L[0].getNext();
+        L[1].getNext();
+        L[2].getNext();
+        if (L[2].getCurrentBit() == 1) {
+            return L[0].getCurrentBit();
         } else {
-            L[0].getNext();
-            return L[1].getNext();
+            return L[1].getCurrentBit();
         }
-    }
-
-    public LinearFeedbackShiftRegister get(int index) {
-        if (index > L.length || index < 0) {
-            return null;
-        }
-        return L[index];
     }
 
 }
